@@ -1,0 +1,28 @@
+{
+  "name": "aditya-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build && vite build --ssr src/prerender.tsx --outDir .ssr && node scripts/prerender.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "prepare:assets": "node scripts/prepare-assets.mjs",
+    "format": "prettier --write src scripts *.json *.ts *.html *.md"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "latest",
+    "prettier": "^3.9.10",
+    "sharp": "^0.35.5",
+    "typescript": "latest",
+    "vite": "latest"
+  }
+}

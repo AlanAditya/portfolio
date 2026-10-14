@@ -1,18 +1,17 @@
-# Aadi Dudeja portfolio
+# Aditya Dudeja — portfolio
 
-A static site: `index.html` plus the images and clips in `assets/`. There is no build step.
+The new personal portfolio lives in [`portfolio/`](portfolio/README.md). It is built with React, TypeScript, and Vite, with prerendered HTML for static delivery on Vercel.
 
-## Put it on Vercel (via GitHub)
+```sh
+cd portfolio
+npm ci
+npm run dev
+```
 
-1. Create a new repository on GitHub and push this folder to it.
-2. Go to https://vercel.com/new, import that repository and click Deploy.
-3. Vercel gives you a `something.vercel.app` address. Every later `git push` redeploys the site.
+The repository-root [`vercel.json`](vercel.json) builds the new portfolio automatically. Import the repository into Vercel with the repository root selected; the output directory is `portfolio/dist`.
 
-## Or from the command line
+## Original reference
 
-Inside this folder run `npx vercel`, answer the prompts, then `npx vercel --prod`.
+The original `legacy_index.html` preserves the original page unchanged, alongside its original `assets/` and `portfolio_assets/`. Open that file separately to consult the earlier project-focused site. Its placeholder speedups are not used in the new portfolio.
 
-## Changing things
-
-- Swap a clip or photo by replacing the file in `assets/` with the same name.
-- The "X× faster" labels and the two dashed "goes here" boxes in `index.html` are placeholders to fill in later.
+See [`portfolio/README.md`](portfolio/README.md) for production builds, deployment configuration, content editing, and accessibility/performance details. See [`portfolio/DESIGN.md`](portfolio/DESIGN.md) for the design direction.
