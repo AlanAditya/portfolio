@@ -15,7 +15,7 @@ An independent engineering studio, with the clarity of a technical field guide a
 
 ## Interaction and performance
 
-Use React + TypeScript + Vite. Prerender the complete public page at build time; hydrate interactive controls. Draw the 3D particle projection directly in a small Canvas 2D implementation. Respond to pointer input without component re-renders. Cap density and device pixel ratio, stop animation offscreen and in hidden tabs, honor reduced motion, expose a pause control. Load project videos only after a visitor opens the case study. Use local fonts and local image assets. No third-party trackers or runtime requests.
+Use React + TypeScript + Vite. Prerender the complete public page at build time; hydrate interactive controls. Draw the 3D particle projection directly in a small Canvas 2D implementation. Respond to pointer input without component re-renders. Cap density and device pixel ratio, stop animation offscreen and in hidden tabs, honor reduced motion, expose a pause control. Project cards play short muted looping clips in place (started only while on screen, paused offscreen, still under reduced motion); the larger controllable videos live in the case study dialog. Use local fonts and local image assets. No third-party trackers or runtime requests.
 
 ## Layout and access
 

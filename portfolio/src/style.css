@@ -2142,3 +2142,74 @@ svg {
     margin-left: 8px;
   }
 }
+
+/* Project cards: videos play in place instead of showing click-to-load thumbnails */
+.project-visual > video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #101710;
+}
+.lidar > video {
+  object-position: 50% 45%;
+  opacity: 0.9;
+}
+.depth > video {
+  object-fit: contain;
+  background: #e9ddd3;
+}
+[data-theme="dark"] .depth > video {
+  background: #1c1c1e;
+}
+.hands > video {
+  object-fit: contain;
+  background: #e3e7d9;
+}
+[data-theme="dark"] .hands > video {
+  background: #1c1c1e;
+}
+.throughput {
+  background: #0c0d10;
+}
+.project-wide {
+  grid-column: 1 / -1;
+}
+.project-wide .project-visual {
+  aspect-ratio: 2.1;
+}
+.project-hallway .project-visual {
+  display: flex;
+  aspect-ratio: 3.08;
+  gap: 2px;
+  background: #101710;
+}
+.project-hallway .project-visual > .hallway-view {
+  height: 100%;
+  min-width: 0;
+}
+.hallway-view-0 {
+  flex: 0.5625 1 0;
+}
+.hallway-view-1 {
+  flex: 1.5 1 0;
+}
+.hallway-view-2 {
+  flex: 1.0154 1 0;
+}
+.dialog-figure {
+  margin: 0;
+}
+.dialog-figure figcaption {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+@media (max-width: 760px) {
+  .project-wide .project-visual {
+    aspect-ratio: 1.35;
+  }
+  .project-hallway .project-visual {
+    aspect-ratio: 3.08;
+  }
+}

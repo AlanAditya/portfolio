@@ -59,78 +59,6 @@ function ExternalLink({
     </a>
   );
 }
-function HandDrawing() {
-  return (
-    <svg
-      className="hand-drawing"
-      viewBox="0 0 500 310"
-      role="img"
-      aria-label="Illustration of 21 connected hand tracking landmarks"
-    >
-      <defs>
-        <pattern
-          id="hand-grid"
-          width="25"
-          height="25"
-          patternUnits="userSpaceOnUse"
-        >
-          <path d="M25 0H0V25" fill="none" stroke="#cbd0c2" strokeWidth=".5" />
-        </pattern>
-      </defs>
-      <rect width="500" height="310" fill="url(#hand-grid)" />
-      <g stroke="#424f40" strokeWidth="1.4" fill="none">
-        <path d="M259 264 198 210 158 185 131 155 115 127M259 264 204 178 192 125 182 87 177 52M259 264 248 167 245 108 242 67 240 32M259 264 288 177 294 122 298 87 299 57M259 264 321 194 340 153 353 124 362 101M204 178 248 167 288 177 321 194" />
-      </g>
-      <g fill="#ed542e">
-        {[
-          [259, 264],
-          [198, 210],
-          [158, 185],
-          [131, 155],
-          [115, 127],
-          [204, 178],
-          [192, 125],
-          [182, 87],
-          [177, 52],
-          [248, 167],
-          [245, 108],
-          [242, 67],
-          [240, 32],
-          [288, 177],
-          [294, 122],
-          [298, 87],
-          [299, 57],
-          [321, 194],
-          [340, 153],
-          [353, 124],
-          [362, 101],
-        ].map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r="4" />
-        ))}
-      </g>
-      <g fontFamily="monospace" fontSize="10" fill="#4e5a48">
-        <text x="370" y="92">
-          20
-        </text>
-        <text x="250" y="27">
-          08
-        </text>
-        <text x="267" y="285">
-          00 / WRIST
-        </text>
-        <text x="24" y="28">
-          21 LANDMARKS
-        </text>
-        <text x="24" y="289">
-          HAND / 01
-        </text>
-        <text x="384" y="289">
-          MLX C++
-        </text>
-      </g>
-    </svg>
-  );
-}
 function MatrixDrawing() {
   return (
     <div
@@ -187,6 +115,51 @@ function MatrixDrawing() {
     </div>
   );
 }
+function AutoVideo({
+  src,
+  poster,
+  label,
+  className,
+}: {
+  src: string;
+  poster?: string;
+  label: string;
+  className?: string;
+}) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.muted = true;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reduced || !("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) el.play().catch(() => {});
+        else el.pause();
+      },
+      { rootMargin: "120px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [src]);
+  return (
+    <video
+      ref={ref}
+      className={className}
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      poster={poster}
+      aria-label={label}
+    >
+      <source src={src} type="video/mp4" />
+    </video>
+  );
+}
 function ProjectCard({
   project,
   onOpen,
@@ -195,7 +168,9 @@ function ProjectCard({
   onOpen: () => void;
 }) {
   return (
-    <article className={`project project-${project.visual}`}>
+    <article
+      className={`project project-${project.visual}${project.wide ? " project-wide" : ""}`}
+    >
       <button
         className="project-open"
         onClick={onOpen}
@@ -204,20 +179,30 @@ function ProjectCard({
         <div className={`project-visual ${project.visual}`}>
           {project.visual === "matrix" ? (
             <MatrixDrawing />
-          ) : project.visual === "hands" ? (
-            <HandDrawing />
+          ) : project.visual === "hallway" ? (
+            <>
+              {[project.video!, ...(project.moreVideos ?? []).map((v) => v.src)].map(
+                (src, i) => (
+                  <AutoVideo
+                    key={src}
+                    src={src}
+                    className={`hallway-view hallway-view-${i}`}
+                    label={
+                      [
+                        "The real hallway",
+                        "The same hallway as a depth map",
+                        "The hallway as a point cloud with the floor plane in green",
+                      ][i] ?? "Hallway view"
+                    }
+                  />
+                ),
+              )}
+            </>
           ) : (
-            <img
-              src={project.image}
-              alt={
-                project.visual === "lidar"
-                  ? "Segmented LiDAR scan of a road junction, with roads, buildings, and vegetation in different colours"
-                  : "A street scene beside its predicted depth map"
-              }
-              width="800"
-              height="480"
-              loading="lazy"
-              decoding="async"
+            <AutoVideo
+              src={project.video!}
+              poster={project.image}
+              label={`${project.tagline}, project recording`}
             />
           )}
           <span className="project-image-label">
@@ -322,6 +307,19 @@ function ProjectDialog({
             Your browser does not support this video.
           </video>
         )}
+        {project.moreVideos?.map((v) => (
+          <figure className="dialog-figure" key={v.src}>
+            <video
+              controls
+              playsInline
+              preload="metadata"
+              aria-label={v.caption}
+            >
+              <source src={v.src} type="video/mp4" />
+            </video>
+            <figcaption>{v.caption}</figcaption>
+          </figure>
+        ))}
         <div className="project-facts">
           {project.facts.map(([value, label]) => (
             <div key={label}>
@@ -595,7 +593,9 @@ export default function App() {
                   className={category === cat ? "active" : ""}
                 >
                   {cat}
-                  {cat === "All work" && <span>04</span>}
+                  {cat === "All work" && (
+                    <span>{String(projects.length).padStart(2, "0")}</span>
+                  )}
                 </button>
               ))}
             </div>

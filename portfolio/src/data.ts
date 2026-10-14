@@ -10,6 +10,8 @@ export type Project = {
   tags: string[];
   image?: string;
   video?: string;
+  moreVideos?: { src: string; caption: string }[];
+  wide?: boolean;
   repo?: string;
   visual: string;
   facts: [string, string][];
@@ -24,6 +26,7 @@ export const projects: Project[] = [
     category: "Robotics",
     tagline: "Real-time LiDAR perception",
     visual: "lidar",
+    wide: true,
     image: "/media/segmentation-still.webp",
     video: "/media/segmentation-clip.mp4",
     description:
@@ -46,9 +49,8 @@ export const projects: Project[] = [
     index: "02",
     name: "Start with the maths.",
     category: "Graphics & systems",
-    tagline: "matrix · a tensor library from scratch",
+    tagline: "matrix · a lazily evaluated tensor library",
     visual: "matrix",
-    video: "/media/particles-orbit.mp4",
     repo: "matrix",
     description:
       "A lazy tensor library with automatic differentiation. One computation graph, from the CPU to the GPU.",
@@ -56,18 +58,47 @@ export const projects: Project[] = [
     facts: [
       ["CPU + GPU", "execution paths"],
       ["JVP / VJP", "automatic differentiation"],
-      ["8 million", "points in the renderer demo"],
+      ["Lazy", "nothing runs until you ask"],
     ],
     paragraphs: [
       "I wanted to understand the machinery underneath machine learning. So I built the machinery: a linear algebra library where writing an expression constructs a graph, and asking for a result executes it.",
-      "Every operation has a CPU path and a Metal GPU path. The same graph can be compiled once, then run on either device. Forward- and reverse-mode differentiation are part of that graph.",
-      "In the particle demo, positions and colours are tensors in a 200 × 200 × 200 grid. The renderer consumes the GPU buffers directly, joining computation and graphics without an extra copy.",
+      "Every operation has a CPU path and a Metal GPU path. The same graph can be compiled once, then run on either device.",
+      "Forward- and reverse-mode differentiation are part of that graph, so the gradient of a function is just more nodes in the same graph.",
+    ],
+  },
+  {
+    id: "throughput",
+    index: "03",
+    name: "Eight million points.",
+    category: "Graphics & systems",
+    tagline: "Throughput: eight million points from one graph",
+    visual: "throughput",
+    video: "/media/particles-orbit.mp4",
+    moreVideos: [
+      {
+        src: "/media/particles-inside.mp4",
+        caption:
+          "The camera inside the cloud, where the point grid lines up into kaleidoscopic starbursts.",
+      },
+    ],
+    repo: "matrix",
+    description:
+      "A 200 × 200 × 200 grid of coloured points, built as tensors in the matrix graph and drawn straight from GPU buffers.",
+    tags: ["Metal", "GPU buffers", "Real-time rendering"],
+    facts: [
+      ["8 million", "points drawn live"],
+      ["120+ FPS", "on an M4 Max"],
+      ["GPU buffers", "drawn without a copy"],
+    ],
+    paragraphs: [
+      "The particle demo builds a 200 × 200 × 200 grid of randomly coloured points as tensors, so the positions and colours are just nodes in the same matrix graph.",
+      "The renderer draws them straight from the GPU buffers, joining computation and graphics without an extra copy. It is a test of how much throughput the library can sustain.",
     ],
     note: "The native particle demo was recorded on an M4 Max. The interactive sculpture on this website is a separate browser visualization, not a benchmark of matrix.",
   },
   {
     id: "depth",
-    index: "03",
+    index: "04",
     name: "Another dimension.",
     category: "Machine learning",
     tagline: "Depth Anything V2, native on MLX",
@@ -91,7 +122,7 @@ export const projects: Project[] = [
   },
   {
     id: "hands",
-    index: "04",
+    index: "05",
     name: "A more human interface.",
     category: "Machine learning",
     tagline: "Hand tracking, rebuilt in C++",
@@ -110,6 +141,38 @@ export const projects: Project[] = [
       "Google’s hand pipeline normally runs on TensorFlow Lite. I wrote a transpiler that reads those model files and generates an equivalent MLX C++ forward pass.",
       "Around the networks, I rebuilt rotated crops, anchor decoding, non-max suppression, and tracking logic. IoU checks prevent duplicate trackers, while One Euro filtering stabilizes the landmarks.",
       "The webcam pipeline runs without TensorFlow Lite at inference time. The supplied recording shows 13.7 ms of inference per frame; that is the model inference time, not the full camera-to-display latency.",
+    ],
+  },
+  {
+    id: "hallway",
+    index: "06",
+    name: "One hallway, three views.",
+    category: "Robotics",
+    tagline: "RANSAC floor-plane detection",
+    visual: "hallway",
+    wide: true,
+    video: "/media/hallway-real.mp4",
+    moreVideos: [
+      {
+        src: "/media/hallway-depth.mp4",
+        caption: "Colour-mapped depth, with people appearing as near shapes.",
+      },
+      {
+        src: "/media/hallway-cloud.mp4",
+        caption: "The point cloud, with the floor plane found by RANSAC in green.",
+      },
+    ],
+    description:
+      "The same walk down a hallway as the camera sees it, as depth, and as a point cloud with the floor plane picked out.",
+    tags: ["RANSAC", "Depth", "Point clouds"],
+    facts: [
+      ["3", "views of one walk"],
+      ["RANSAC", "floor plane fit"],
+      ["Depth", "distance for every pixel"],
+    ],
+    paragraphs: [
+      "The left clip is the real hallway. The middle is its depth map, and the right is the same depth pushed out into a 3D point cloud.",
+      "RANSAC fits a plane to the floor, and the points that belong to it are coloured green so the obstacles stand out from the ground.",
     ],
   },
 ];
