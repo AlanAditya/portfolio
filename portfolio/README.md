@@ -38,6 +38,12 @@ If deploying just this subdirectory instead, use Vite as the preset, `npm ci`, `
 
 No live deployment is required to preview or edit this project.
 
+## Project links
+
+Every project has its own URL, `/work/<id>` (the `id` in `src/data.ts`), which opens the site with that project's dialog showing. The dialog's **Share** button copies the link, or opens the share sheet on phones. The build writes a page per project with its own title, description, and link-preview image from `public/media/share/<id>.jpg` (1200 × 630), falling back to `social.png`.
+
+Link previews need absolute image URLs. On Vercel the build uses the production domain automatically; set a `SITE_URL` environment variable (for example `https://adityadudeja.com`) to use a custom domain instead.
+
 ## Edit the content
 
 - `src/data.ts`: selected projects, descriptions, measurements, media, and repository URLs.

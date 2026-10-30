@@ -12,6 +12,12 @@ const categories: Category[] = [
   "Graphics & systems",
   "Robotics",
 ];
+// Each project has a shareable URL, /work/<id>, that opens its dialog.
+const projectPath = (p: Project) => `/work/${p.id}`;
+function projectFromLocation() {
+  const id = window.location.pathname.match(/^\/work\/([^/]+)\/?$/)?.[1];
+  return projects.find((p) => p.id === id) ?? null;
+}
 function Arrow({ diagonal = false }: { diagonal?: boolean }) {
   return (
     <svg
@@ -120,11 +126,13 @@ function AutoVideo({
   poster,
   label,
   className,
+  controls = false,
 }: {
   src: string;
   poster?: string;
   label: string;
   className?: string;
+  controls?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
@@ -149,6 +157,7 @@ function AutoVideo({
     <video
       ref={ref}
       className={className}
+      controls={controls}
       muted
       loop
       playsInline
@@ -181,22 +190,23 @@ function ProjectCard({
             <MatrixDrawing />
           ) : project.visual === "hallway" ? (
             <>
-              {[project.video!, ...(project.moreVideos ?? []).map((v) => v.src)].map(
-                (src, i) => (
-                  <AutoVideo
-                    key={src}
-                    src={src}
-                    className={`hallway-view hallway-view-${i}`}
-                    label={
-                      [
-                        "The real hallway",
-                        "The same hallway as a depth map",
-                        "The hallway as a point cloud with the floor plane in green",
-                      ][i] ?? "Hallway view"
-                    }
-                  />
-                ),
-              )}
+              {[
+                project.video!,
+                ...(project.moreVideos ?? []).map((v) => v.src),
+              ].map((src, i) => (
+                <AutoVideo
+                  key={src}
+                  src={src}
+                  className={`hallway-view hallway-view-${i}`}
+                  label={
+                    [
+                      "The real hallway",
+                      "The same hallway as a depth map",
+                      "The hallway as a point cloud with the floor plane in green",
+                    ][i] ?? "Hallway view"
+                  }
+                />
+              ))}
             </>
           ) : (
             <AutoVideo
@@ -233,6 +243,38 @@ function ProjectCard({
         ))}
       </div>
     </article>
+  );
+}
+function ShareButton({ project }: { project: Project }) {
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
+  async function share() {
+    const url = window.location.origin + projectPath(project);
+    // Phones get the native share sheet; desktops copy the link.
+    if (navigator.share && window.matchMedia("(pointer: coarse)").matches) {
+      try {
+        await navigator.share({ title: project.tagline, url });
+      } catch {
+        /* Share sheet dismissed. */
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+    } catch {
+      window.prompt("Copy this link", url);
+    }
+  }
+  return (
+    <button className="share-button" onClick={share}>
+      {copied ? "Link copied" : "Share"}
+      <span aria-hidden="true">{copied ? "✓" : "↗"}</span>
+    </button>
   );
 }
 function ProjectDialog({
@@ -283,68 +325,70 @@ function ProjectDialog({
         <span className="eyebrow">
           PROJECT {project.index} / {project.category}
         </span>
-        <button
-          className="close-button"
-          onClick={onClose}
-          aria-label="Close project"
-        >
-          ×
-        </button>
-      </div>
-      <div className="dialog-body">
-        <h2 id="dialog-title">{project.tagline}</h2>
-        <p className="dialog-intro">{project.description}</p>
-        {project.video && (
-          <video
-            key={project.video}
-            controls
-            playsInline
-            preload="metadata"
-            poster={project.image}
-            aria-label={`${project.tagline} project recording`}
+        <div className="dialog-actions">
+          <ShareButton project={project} />
+          <button
+            className="close-button"
+            onClick={onClose}
+            aria-label="Close project"
           >
-            <source src={project.video} type="video/mp4" />
-            Your browser does not support this video.
-          </video>
-        )}
-        {project.moreVideos?.map((v) => (
-          <figure className="dialog-figure" key={v.src}>
-            <video
-              controls
-              playsInline
-              preload="metadata"
-              aria-label={v.caption}
-            >
-              <source src={v.src} type="video/mp4" />
-            </video>
-            <figcaption>{v.caption}</figcaption>
-          </figure>
-        ))}
-        <div className="project-facts">
-          {project.facts.map(([value, label]) => (
-            <div key={label}>
-              <strong>{value}</strong>
-              <span>{label}</span>
-            </div>
-          ))}
+            ×
+          </button>
         </div>
-        <h3>Under the surface</h3>
-        {project.paragraphs.map((p) => (
-          <p key={p}>{p}</p>
-        ))}
-        {project.note && <p className="technical-note">{project.note}</p>}
-        {project.repo ? (
-          <ExternalLink
-            href={`${github}/${project.repo}`}
-            className="button dark-button"
+      </div>
+      {/* Wide screens put the media beside the text, so the text is never
+          pushed below the fold; narrow screens stack head, media, then text. */}
+      <div className={`dialog-body${project.video ? " has-media" : ""}`}>
+        <div className="dialog-head">
+          <h2 id="dialog-title">{project.tagline}</h2>
+          <p className="dialog-intro">{project.description}</p>
+        </div>
+        {project.video && (
+          <div
+            className={`dialog-media${project.moreVideos ? "" : " dialog-media-single"}`}
           >
-            Explore the source
-          </ExternalLink>
-        ) : (
-          <ExternalLink href={github} className="button dark-button">
-            More on GitHub
-          </ExternalLink>
+            <AutoVideo
+              key={project.video}
+              controls
+              src={project.video}
+              poster={project.image}
+              label={`${project.tagline} project recording`}
+            />
+            {project.moreVideos?.map((v) => (
+              <figure className="dialog-figure" key={v.src}>
+                <AutoVideo controls src={v.src} label={v.caption} />
+                <figcaption>{v.caption}</figcaption>
+              </figure>
+            ))}
+          </div>
         )}
+        <div className="dialog-text">
+          <div className="project-facts">
+            {project.facts.map(([value, label]) => (
+              <div key={label}>
+                <strong>{value}</strong>
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
+          <h3>Under the surface</h3>
+          {project.paragraphs.map((p) => (
+            <p key={p}>{p}</p>
+          ))}
+          {project.note && <p className="technical-note">{project.note}</p>}
+          {project.repo ? (
+            <ExternalLink
+              href={`${github}/${project.repo}`}
+              className="button dark-button"
+            >
+              Explore the source
+            </ExternalLink>
+          ) : (
+            <ExternalLink href={github} className="button dark-button">
+              More on GitHub
+            </ExternalLink>
+          )}
+        </div>
       </div>
     </dialog>
   );
@@ -431,6 +475,33 @@ export default function App() {
   const [project, setProject] = useState<Project | null>(null);
   const [heroPaused, setHeroPaused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => {
+    // Open the project named in the URL, and follow back/forward navigation.
+    const sync = () => setProject(projectFromLocation());
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
+  useEffect(() => {
+    if (!project) return;
+    const oldTitle = document.title;
+    document.title = `${project.tagline} — Aditya Dudeja`;
+    return () => {
+      document.title = oldTitle;
+    };
+  }, [project]);
+  function openProject(p: Project) {
+    window.history.pushState({ openedProject: true }, "", projectPath(p));
+    setProject(p);
+  }
+  function closeProject() {
+    // Undo our own history entry; a visitor who arrived on the link goes home.
+    if (window.history.state?.openedProject) window.history.back();
+    else {
+      window.history.replaceState(null, "", "/");
+      setProject(null);
+    }
+  }
   return (
     <>
       <a className="skip-link" href="#main">
@@ -615,7 +686,7 @@ export default function App() {
                 <ProjectCard
                   key={p.id}
                   project={p}
-                  onOpen={() => setProject(p)}
+                  onOpen={() => openProject(p)}
                 />
               ))}
           </div>
@@ -839,12 +910,17 @@ export default function App() {
       </main>
       <footer className="footer">
         <span>© {new Date().getFullYear()} Aditya Dudeja</span>
-        <span>Made with intent. Built with curiosity. <a href="/legacy_index.html" className="legacy-link">Legacy site ↗</a></span>
+        <span>
+          Made with intent. Built with curiosity.{" "}
+          <a href="/legacy_index.html" className="legacy-link">
+            Legacy site ↗
+          </a>
+        </span>
         <a href="#" className="text-button">
           Back to top ↑
         </a>
       </footer>
-      <ProjectDialog project={project} onClose={() => setProject(null)} />
+      <ProjectDialog project={project} onClose={closeProject} />
     </>
   );
 }
