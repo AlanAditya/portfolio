@@ -2397,3 +2397,24 @@ svg {
 }
 /* Graphs open the matrix dialog: the facts row already draws the divider. */
 .project-facts + .matrix-lab { margin-top: 36px; padding-top: 0; border-top: 0; }
+/* A still (the Sherlock poster) in place of a project video */
+.dialog-still { margin: 25px 0 0; gap: 8px; }
+.dialog-still img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #05080d;
+}
+.dialog-still figcaption { font-size: 12px; color: var(--muted); }
+@media (min-width: 1000px) {
+  .dialog-still { margin-top: 0; }
+  .dialog-still img {
+    width: auto;
+    max-width: 100%;
+    max-height: calc(92dvh - 150px);
+    margin-inline: auto;
+  }
+  .dialog-still figcaption { text-align: center; }
+}
+/* Narrower cards crop the poster; keep its left-aligned caption in view. */
+.project-sherlock .project-visual img { object-position: left center; }

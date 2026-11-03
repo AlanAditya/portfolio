@@ -10,6 +10,11 @@ export type Project = {
   description: string;
   tags: string[];
   image?: string;
+  // A still for the card when `image` is too tall to crop well there.
+  cardImage?: string;
+  // Alt text and caption for an `image` shown on its own (no video).
+  imageAlt?: string;
+  imageCaption?: string;
   video?: string;
   // `aspect` (width / height) sizes side-by-side clips to a shared height.
   moreVideos?: { src: string; caption: string; aspect?: number }[];
@@ -216,10 +221,27 @@ export const projects: Project[] = [
     category: "Machine learning",
     tagline: "Sherlock · detecting a heartbeat from video",
     visual: "sherlock",
-    description: "A computer vision experiment that finds subtle signs of a heartbeat in face video to help identify deepfakes.",
-    tags: ["Computer vision", "Signal processing", "Deepfake detection"],
-    facts: [["Video", "ordinary face footage"], ["Pulse", "from subtle color changes"], ["Eulerian", "video magnification"]],
-    paragraphs: ["Blood flow causes tiny changes in skin color. Sherlock uses Eulerian video magnification to amplify those changes and recover a pulse signal from ordinary face video.", "The presence and consistency of the recovered signal can provide a clue when distinguishing real footage from deepfakes."],
+    image: "/media/sherlock-poster.webp",
+    cardImage: "/media/sherlock-card.webp",
+    imageAlt:
+      "Project Sherlock poster: a point-cloud figure with a magnifying glass over the cheek showing skin flushed red, amplified 40 times, above a heartbeat trace and the four steps capture, map, split and amplify.",
+    imageCaption:
+      "The project poster. The figure is an illustration, with the red shown amplified.",
+    description:
+      "A webcam, a face mesh and a band-pass filter: amplifying the invisible flush of a heartbeat, live and on-device, to help tell real faces from deepfakes.",
+    tags: ["Computer vision", "MLX", "Signal processing", "Deepfake detection"],
+    facts: [
+      ["478", "face-mesh landmarks, via mlxpipe"],
+      ["0.7–2.5 Hz", "heartbeat band, 42–150 bpm"],
+      ["×40", "colour amplification"],
+    ],
+    paragraphs: [
+      "Every heartbeat pushes a little more blood into the face, and the skin turns very slightly redder. The change is far too small to see. Sherlock uses Eulerian video magnification to amplify it and recover a pulse from an ordinary webcam, live and on-device.",
+      "Capture and map: a webcam films the face at 30 frames a second, and each frame goes through mlxpipe, my rebuild of MediaPipe’s vision pipelines on MLX. It places a 478-point face mesh, so the pipeline knows which pixels are skin and can follow them as the head moves.",
+      "Split: each frame is reduced to an 80 × 45 grid, 3,600 colour cells. Averaging pixels into cells smooths away camera noise and leaves one slow colour signal per cell over time.",
+      "Amplify: each cell’s signal is band-pass filtered to 0.7–2.5 Hz, roughly 42 to 150 beats per minute, the range a human heart beats in. Breathing, lighting drift and fast flicker fall outside the band and are discarded. What remains is multiplied by 40 and capped at ±24, so the face visibly flushes with each beat without being washed out.",
+      "A real face carries that rhythm across its skin; a generated one may not, or may carry it inconsistently. The presence and consistency of the recovered signal can provide a clue when distinguishing real footage from deepfakes.",
+    ],
   },
   {
     id: "throughput",

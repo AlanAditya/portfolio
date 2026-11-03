@@ -228,7 +228,9 @@ function ProjectCard({
         aria-label={`Explore ${project.tagline}`}
       >
         <div className={`project-visual ${project.visual}`}>
-          {project.visual === "matrix" ? (
+          {project.cardImage ? (
+            <img src={project.cardImage} alt="" loading="lazy" />
+          ) : project.visual === "matrix" ? (
             <MatrixDrawing />
           ) : ["neptune", "quantum", "sherlock"].includes(project.visual) ? (
             <ProjectIllustration visual={project.visual} />
@@ -385,7 +387,7 @@ function ProjectDialog({
           pushed below the fold; narrow screens and very wide media stack head,
           media, then text. */}
       <div
-        className={`dialog-body${project.video && !project.wideMedia ? " has-media" : ""}`}
+        className={`dialog-body${(project.video || project.imageAlt) && !project.wideMedia ? " has-media" : ""}`}
       >
         <div className="dialog-head">
           <h2 id="dialog-title">{project.tagline}</h2>
@@ -417,6 +419,14 @@ function ProjectDialog({
               </div>
             )}
           </div>
+        )}
+        {!project.video && project.image && project.imageAlt && (
+          <figure className="dialog-media dialog-media-single dialog-still">
+            <img src={project.image} alt={project.imageAlt} />
+            {project.imageCaption && (
+              <figcaption>{project.imageCaption}</figcaption>
+            )}
+          </figure>
         )}
         <div className="dialog-text">
           <div className="project-facts">
