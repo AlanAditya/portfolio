@@ -168,16 +168,20 @@ export const projects: Project[] = [
       },
     ],
     description:
-      "The same walk down a hallway as the camera sees it, as depth, and as a point cloud with the floor plane picked out.",
-    tags: ["RANSAC", "Depth", "Point clouds"],
+      "The same walk down a hallway as the camera sees it, as depth, and as a point cloud with the floor found by RANSAC on the GPU, live on an iPhone.",
+    tags: ["RANSAC", "Metal compute", "iPhone depth"],
     facts: [
-      ["3", "views of one walk"],
-      ["RANSAC", "floor plane fit"],
-      ["Depth", "distance for every pixel"],
+      ["300", "candidate planes per frame"],
+      ["1 thread", "per point–plane pair"],
+      ["2 passes", "score every plane, then mask the winner"],
     ],
     paragraphs: [
-      "Three views of one walk: the real hallway, its depth map, and the same depth pushed out into a 3D point cloud.",
-      "RANSAC fits a plane to the floor, and the points that belong to it are coloured green so the obstacles stand out from the ground.",
+      "Three views of one walk: the real hallway from the iPhone camera, its depth map, and the same depth pushed out into a 3D point cloud. The whole pipeline runs on the phone, aiming for 30 frames a second.",
+      "Every depth pixel becomes a point: its column and row are spread across a fixed grid, and its depth becomes the third axis. The colour camera and the depth sensor share a field of view but not a resolution, so each point finds its colour by scaling its pixel coordinates into the camera image and gathering the nearest pixel. That is one tensor gather instead of a reprojection.",
+      "RANSAC finds the floor by guessing and checking. It picks three random points, takes the cross product of two edges to get a normal, and that normal plus a point defines a candidate plane. Repeated or nearly collinear triples are thrown away. This repeats 300 times per frame. Sampling stays on the CPU, because it is cheap and full of branches.",
+      "Scoring is where the time goes: every point has to be tested against every candidate. A Metal kernel dispatches a 2D grid with one thread per point–plane pair. Each thread checks |n · p + d| < 0.06 and, if the point is close enough, atomically increments that candidate’s counter. The CPU then takes the argmax over just 300 numbers, and a second kernel writes the final inlier mask for the winning plane only.",
+      "That mask becomes a per-point weight: 0.9 on the floor and 0 everywhere else, broadcast against the photo colours. Floor points are pulled strongly toward green, while walls and people keep their real colour, so anything standing on the ground stands out.",
+      "The same function can also take the phone’s gravity vector and reject candidates tilted more than 20° from level, counting up and down alike because the sign of a cross product is arbitrary. This recording ran without that constraint. In a hallway, the floor is the largest flat surface in view, so it wins anyway.",
     ],
   },
   {
