@@ -82,16 +82,19 @@ export const projects: Project[] = [
     video: "/media/gravity-simulation.mp4",
     repo: "WorldOf3D",
     description:
-      "A cloud of particles evolving under gravity, captured live in the renderer.",
-    tags: ["Gravity", "Particle simulation", "Real-time graphics"],
+      "Eight thousand particles falling around a small planet, written entirely as tensor maths and drawn live in my Metal renderer.",
+    tags: ["Particle simulation", "matrix", "Metal"],
     facts: [
-      ["Particles", "a simulated cloud"],
-      ["Gravity", "motion over time"],
-      ["Live", "captured in the renderer"],
+      ["8,000", "particles on a 20³ grid"],
+      ["1 / r²", "pull toward a central body"],
+      ["30 / s", "physics steps, whole cloud at once"],
     ],
     paragraphs: [
-      "This experiment brings a field of particles to life under gravity, letting their motion unfold in real time.",
-      "The recording shows the simulation running in the native graphics environment, with the particle cloud changing as the scene evolves.",
+      "The scene starts as a 20 × 20 × 20 lattice spanning −10 to 10 on each axis, built with meshgrid and flattened into one 8,000 × 3 tensor of positions. Every particle gets a random colour and a random starting velocity between −1 and 1 on each axis, so the cloud begins as a lattice that immediately starts to scatter.",
+      "At the centre sits a small sphere, the “Earth”. Its texture is generated rather than loaded: a Perlin noise field blends blue oceans with green land, then gets uploaded straight to the GPU as a Metal texture.",
+      "Each frame applies Newton’s inverse-square law to every particle at once. The acceleration toward the centre is −r / |r|³: square the positions, sum across x, y and z, take r² · √r², and divide. Velocity is updated first and position second, using the new velocity, a semi-implicit Euler step that keeps orbits stable for longer than a naive update.",
+      "There is no per-particle loop anywhere. The whole step is four lines of matrix expressions, so the physics is just another computation graph, re-evaluated 30 times a second on a background queue and handed to the point-cloud renderer.",
+      "Because the initial velocities are random, some particles fall in close and slingshot back out, some settle into looping orbits, and others escape entirely. Every run is a little different.",
     ],
   },
   {

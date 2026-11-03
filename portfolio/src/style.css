@@ -2395,3 +2395,5 @@ svg {
   .matrix-graph .graph-flow { animation: matrix-data-flow 1.2s linear infinite; }
   @keyframes matrix-data-flow { to { stroke-dashoffset: -9; } }
 }
+/* Graphs open the matrix dialog: the facts row already draws the divider. */
+.project-facts + .matrix-lab { margin-top: 36px; padding-top: 0; border-top: 0; }

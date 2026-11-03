@@ -427,11 +427,11 @@ function ProjectDialog({
               </div>
             ))}
           </div>
+          {project.id === "matrix" && <MatrixGraphs />}
           <h3>Under the surface</h3>
           {project.paragraphs.map((p) => (
             <p key={p}>{p}</p>
           ))}
-          {project.id === "matrix" && <MatrixGraphs />}
           {project.note && <p className="technical-note">{project.note}</p>}
           {project.repo ? (
             <ExternalLink
