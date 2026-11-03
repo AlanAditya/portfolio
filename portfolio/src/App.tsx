@@ -131,23 +131,17 @@ function AutoVideo({
   label,
   className,
   controls = false,
-  suspended = false,
 }: {
   src: string;
   poster?: string;
   label: string;
   className?: string;
   controls?: boolean;
-  suspended?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (suspended) {
-      el.pause();
-      return;
-    }
     el.muted = true;
     const reduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
@@ -162,7 +156,7 @@ function AutoVideo({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [src, suspended]);
+  }, [src]);
   return (
     <video
       ref={ref}
@@ -182,34 +176,13 @@ function AutoVideo({
 function ProjectIllustration({ visual }: { visual: string }) {
   if (visual === "neptune") return (
     <div className="custom-art neptune-art" aria-hidden="true">
-      <svg className="neptune-scene" viewBox="0 0 600 405" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          <radialGradient id="neptune-space"><stop stopColor="#183456"/><stop offset="1" stopColor="#080f1d"/></radialGradient>
-          <radialGradient id="neptune-planet" cx="30%" cy="25%"><stop stopColor="#a5e1dd"/><stop offset=".42" stopColor="#518ba8"/><stop offset="1" stopColor="#182d54"/></radialGradient>
-          <linearGradient id="neptune-panel" x2="1" y2="1"><stop stopColor="#162a41" stopOpacity=".95"/><stop offset="1" stopColor="#0b1728" stopOpacity=".94"/></linearGradient>
-          <clipPath id="neptune-disc"><circle cx="402" cy="176" r="98"/></clipPath>
-        </defs>
-        <rect width="600" height="405" fill="url(#neptune-space)"/>
-        <g fill="#b5d9e7" opacity=".7"><circle cx="63" cy="70" r="1"/><circle cx="156" cy="50" r="1.3"/><circle cx="254" cy="89" r="1"/><circle cx="538" cy="64" r="1.2"/><circle cx="507" cy="290" r="1"/><circle cx="88" cy="320" r="1"/><circle cx="350" cy="345" r="1.2"/><circle cx="560" cy="190" r=".8"/></g>
-        <ellipse cx="402" cy="176" rx="167" ry="42" transform="rotate(-20 402 176)" fill="none" stroke="#80c8df" strokeOpacity=".24" strokeWidth="13"/>
-        <circle cx="402" cy="176" r="98" fill="url(#neptune-planet)"/>
-        <g clipPath="url(#neptune-disc)" fill="none" stroke="#b0e4e7" strokeOpacity=".2" strokeWidth="2"><path d="M285 130c63 15 131-23 234-15M280 159c83 19 137-20 247-15M285 191c70 12 138-15 232-7M291 219c70 13 127-5 222 1"/><path d="M374 78c-40 58-41 137 8 196M417 78c-21 69-12 141 22 193" strokeOpacity=".12"/></g>
-        <ellipse cx="402" cy="176" rx="167" ry="42" transform="rotate(-20 402 176)" fill="none" stroke="#9fd9e8" strokeOpacity=".55" strokeWidth="1"/>
-        <circle cx="551" cy="113" r="3" fill="#f3a78b"/><circle cx="551" cy="113" r="7" fill="none" stroke="#f3a78b" strokeOpacity=".5"/>
-        <g transform="translate(49 158)">
-          <rect width="288" height="174" rx="3" fill="url(#neptune-panel)" stroke="#83b6c5" strokeOpacity=".45"/>
-          <path d="M0 29h288" stroke="#83b6c5" strokeOpacity=".3"/>
-          <circle cx="15" cy="15" r="2" fill="#f3a78b"/><circle cx="24" cy="15" r="2" fill="#83b6c5"/><circle cx="33" cy="15" r="2" fill="#83b6c5"/>
-          <text x="49" y="18" className="neptune-ui-label">NEPTUNE / KERNEL SESSION</text>
-          <text x="17" y="60" className="neptune-ui-code"><tspan fill="#eab299">01</tspan><tspan fill="#8bc7df">  auto</tspan><tspan fill="#dbe9e7"> scene = create();</tspan></text>
-          <path d="M16 76h256" stroke="#83b6c5" strokeOpacity=".16"/>
-          <text x="17" y="103" className="neptune-ui-code"><tspan fill="#eab299">02</tspan><tspan fill="#dbe9e7">  scene.</tspan><tspan fill="#8bc7df">run</tspan><tspan fill="#dbe9e7">();</tspan></text>
-          <path d="M16 120h256" stroke="#83b6c5" strokeOpacity=".16"/>
-          <circle cx="20" cy="145" r="3" fill="#9de0c2"/><text x="30" y="149" className="neptune-ui-label">KERNEL ONLINE / STATE PERSISTENT</text>
-        </g>
-        <text x="51" y="369" className="neptune-ui-label">C++ / OBJECTIVE-C++</text>
-        <text x="548" y="369" textAnchor="end" className="neptune-ui-label">01 — LIVE PROCESS</text>
-      </svg>
+      <div className="notebook-window">
+        <div className="notebook-top"><span>● ● ●</span><span>NEPTUNE / NOTEBOOK</span></div>
+        <div className="notebook-cell"><span>01</span><code><i>auto</i> world = make_scene();</code></div>
+        <div className="notebook-cell"><span>02</span><code>world.<i>render</i>();</code></div>
+        <div className="notebook-result"><span>↳</span> kernel ready <b>●</b></div>
+      </div>
+      <span className="art-caption">NATIVE CODE / LIVE PROCESS</span>
     </div>
   );
   if (visual === "quantum") return (
@@ -241,11 +214,9 @@ function ProjectIllustration({ visual }: { visual: string }) {
 function ProjectCard({
   project,
   onOpen,
-  suspended,
 }: {
   project: Project;
   onOpen: () => void;
-  suspended: boolean;
 }) {
   return (
     <article
@@ -273,7 +244,6 @@ function ProjectCard({
                 <AutoVideo
                   key={src}
                   src={src}
-                  suspended={suspended}
                   className={`hallway-view hallway-view-${i}`}
                   label={
                     [
@@ -288,7 +258,6 @@ function ProjectCard({
           ) : (
             <AutoVideo
               src={project.video!}
-              suspended={suspended}
               poster={project.image}
               label={`${project.tagline}, project recording`}
             />
@@ -785,7 +754,6 @@ export default function App() {
                   key={p.id}
                   project={p}
                   onOpen={() => openProject(p)}
-                  suspended={project !== null}
                 />
               ))}
           </div>

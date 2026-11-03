@@ -490,10 +490,13 @@ svg {
 .art-caption { position: absolute; bottom: 8%; font: 8px var(--mono); letter-spacing: 1.4px; opacity: .65; }
 .quantum-art { background-color: #253137; }
 .sherlock-art { background-color: #392c2c; color: #dfc7bc; }
-.neptune-art { background: #080f1d; }
-.custom-art .neptune-scene { width: 100%; height: 100%; max-height: none; }
-.neptune-art svg text.neptune-ui-label { fill: #a1c4d0; font: 8px var(--mono); letter-spacing: 1px; }
-.neptune-art svg text.neptune-ui-code { font: 12px var(--mono); letter-spacing: 0; }
+.notebook-window { width: 70%; max-width: 380px; border: 1px solid #a8b39b70; background: #1b221f; box-shadow: 0 18px 40px #0004; font-family: var(--mono); }
+.notebook-top { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid #a8b39b40; color: #9eab96; font-size: 8px; letter-spacing: 1px; }
+.notebook-cell { display: flex; gap: 18px; padding: 13px 15px; border-bottom: 1px solid #a8b39b25; font-size: clamp(9px, 1.1vw, 12px); white-space: nowrap; }
+.notebook-cell > span, .notebook-result > span { color: #87977f; }
+.notebook-cell i { color: #ef9470; font-style: normal; }
+.notebook-result { padding: 12px 15px; color: #b2bdae; font-size: 10px; }
+.notebook-result b { color: #a6ba8b; font-size: 8px; }
 .project {
   min-width: 0;
 }
