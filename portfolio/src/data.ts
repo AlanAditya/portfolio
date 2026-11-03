@@ -78,8 +78,12 @@ export const projects: Project[] = [
     ],
     paragraphs: [
       "I wanted to understand the machinery underneath machine learning. So I built the machinery: a linear algebra library where writing an expression constructs a graph, and asking for a result executes it.",
-      "Every operation has a CPU path and a Metal GPU path. The same graph can be compiled once, then run on either device.",
-      "Forward- and reverse-mode differentiation are part of that graph, so the gradient of a function is just more nodes in the same graph.",
+      "Every matrix is an edge in that graph. It shares a reference-counted buffer, on the CPU and optionally on the GPU as a Metal buffer, and points to the operation that produced it. Every operation is a node with two implementations: C++ vectorised with ARM NEON for the CPU, and a Metal compute kernel for the GPU. Writing maths computes nothing; eval() walks the graph and runs it on whichever device you choose.",
+      "It is closer to TensorFlow 1.x sessions than to eager frameworks like MLX or JAX, though inspired by both. A graph is built once, compiled once, then executed as many times as you like with minimal overhead per run. Inputs can be leaves written in place: mark one as changed and only the parts of the graph that depend on it run again. That is how my LiDAR plane segmentation responds to a slider without recomputing every surface normal.",
+      "Forward-mode (JVP) and reverse-mode (VJP) rules live on every operation, so the gradient of a function is just more nodes in the same graph, compiled and run on the GPU like anything else. The API follows MLX: grad, value_and_grad, and laplacian, which sums second derivatives for physics-style problems.",
+      "45 Metal kernel files cover elementwise maths and broadcasting, reductions including argmax and argmin, matrix multiplication, N-dimensional convolution, scatter and gather, resampling, random numbers and a discrete Fourier transform. Twelve data types run from Bool and Int8 through Float16 and BFloat16 to Complex64. When no built-in operation fits, gpu_func drops a hand-written Metal kernel into the graph as a node of its own.",
+      "Operations and their gradients are tested on both the CPU and Metal paths, with results checked against MLX.",
+      "matrix sits underneath several other projects here: the drishti LiDAR pipeline, the gravity simulation, the iPhone depth and RANSAC demos, and the eight-million-point particle renderer.",
     ],
   },
   {
