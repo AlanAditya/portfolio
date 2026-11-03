@@ -131,17 +131,23 @@ function AutoVideo({
   label,
   className,
   controls = false,
+  suspended = false,
 }: {
   src: string;
   poster?: string;
   label: string;
   className?: string;
   controls?: boolean;
+  suspended?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (suspended) {
+      el.pause();
+      return;
+    }
     el.muted = true;
     const reduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
@@ -156,7 +162,7 @@ function AutoVideo({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [src]);
+  }, [src, suspended]);
   return (
     <video
       ref={ref}
@@ -235,9 +241,11 @@ function ProjectIllustration({ visual }: { visual: string }) {
 function ProjectCard({
   project,
   onOpen,
+  suspended,
 }: {
   project: Project;
   onOpen: () => void;
+  suspended: boolean;
 }) {
   return (
     <article
@@ -265,6 +273,7 @@ function ProjectCard({
                 <AutoVideo
                   key={src}
                   src={src}
+                  suspended={suspended}
                   className={`hallway-view hallway-view-${i}`}
                   label={
                     [
@@ -279,6 +288,7 @@ function ProjectCard({
           ) : (
             <AutoVideo
               src={project.video!}
+              suspended={suspended}
               poster={project.image}
               label={`${project.tagline}, project recording`}
             />
@@ -775,6 +785,7 @@ export default function App() {
                   key={p.id}
                   project={p}
                   onOpen={() => openProject(p)}
+                  suspended={project !== null}
                 />
               ))}
           </div>
