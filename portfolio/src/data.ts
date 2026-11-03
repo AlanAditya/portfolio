@@ -5,13 +5,17 @@ export type Project = {
   index: string;
   name: string;
   category: Exclude<Category, "All work">;
+  additionalCategories?: Exclude<Category, "All work">[];
   tagline: string;
   description: string;
   tags: string[];
   image?: string;
   video?: string;
-  moreVideos?: { src: string; caption: string }[];
+  // `aspect` (width / height) sizes side-by-side clips to a shared height.
+  moreVideos?: { src: string; caption: string; aspect?: number }[];
   wide?: boolean;
+  // Media too wide to sit beside the text; the dialog stacks it full width.
+  wideMedia?: boolean;
   repo?: string;
   visual: string;
   facts: [string, string][];
@@ -26,6 +30,7 @@ export const projects: Project[] = [
     category: "Robotics",
     tagline: "Real-time LiDAR perception",
     visual: "lidar",
+    repo: "drishti-lidar",
     wide: true,
     image: "/media/segmentation-still.webp",
     video: "/media/segmentation-clip.mp4",
@@ -50,6 +55,7 @@ export const projects: Project[] = [
     name: "Start with the maths.",
     category: "Graphics & systems",
     tagline: "matrix · a lazily evaluated tensor library",
+    additionalCategories: ["Machine learning"],
     visual: "matrix",
     repo: "matrix",
     description:
@@ -67,34 +73,26 @@ export const projects: Project[] = [
     ],
   },
   {
-    id: "throughput",
+    id: "gravity",
     index: "03",
-    name: "Eight million points.",
+    name: "Gravity, in motion.",
     category: "Graphics & systems",
-    tagline: "Throughput: eight million points from one graph",
-    visual: "throughput",
-    video: "/media/particles-orbit.mp4",
-    moreVideos: [
-      {
-        src: "/media/particles-inside.mp4",
-        caption:
-          "The camera inside the cloud, where the point grid lines up into kaleidoscopic starbursts.",
-      },
-    ],
-    repo: "matrix",
+    tagline: "A real-time gravity simulation",
+    visual: "gravity",
+    video: "/media/gravity-simulation.mp4",
+    repo: "WorldOf3D",
     description:
-      "A 200 × 200 × 200 grid of coloured points, built as tensors in the matrix graph and drawn straight from GPU buffers.",
-    tags: ["Metal", "GPU buffers", "Real-time rendering"],
+      "A cloud of particles evolving under gravity, captured live in the renderer.",
+    tags: ["Gravity", "Particle simulation", "Real-time graphics"],
     facts: [
-      ["8 million", "points drawn live"],
-      ["120+ FPS", "on an M4 Max"],
-      ["GPU buffers", "drawn without a copy"],
+      ["Particles", "a simulated cloud"],
+      ["Gravity", "motion over time"],
+      ["Live", "captured in the renderer"],
     ],
     paragraphs: [
-      "The particle demo builds a 200 × 200 × 200 grid of randomly coloured points as tensors, so the positions and colours are just nodes in the same matrix graph.",
-      "The renderer draws them straight from the GPU buffers, joining computation and graphics without an extra copy. It is a test of how much throughput the library can sustain.",
+      "This experiment brings a field of particles to life under gravity, letting their motion unfold in real time.",
+      "The recording shows the simulation running in the native graphics environment, with the particle cloud changing as the scene evolves.",
     ],
-    note: "The native particle demo was recorded on an M4 Max. The interactive sculpture on this website is a separate browser visualization, not a benchmark of matrix.",
   },
   {
     id: "depth",
@@ -105,6 +103,7 @@ export const projects: Project[] = [
     visual: "depth",
     image: "/media/depth-demo.webp",
     video: "/media/depth-webcam.mp4",
+    wideMedia: true,
     repo: "Depth-Anything-MLX",
     description:
       "Turning a single image into depth, and depth into a world you can move through. Native on Apple Silicon.",
@@ -128,7 +127,7 @@ export const projects: Project[] = [
     tagline: "Hand tracking, rebuilt in C++",
     visual: "hands",
     video: "/media/handtrack-clip.mp4",
-    repo: "MEDIAPIPE_MLX_PORT",
+    repo: "mlxpipe",
     description:
       "From a TensorFlow Lite model to a native MLX pipeline. Twenty-one landmarks, one hand at a time.",
     tags: ["MLX C++", "Model transpiler", "Real-time vision"],
@@ -151,15 +150,18 @@ export const projects: Project[] = [
     tagline: "RANSAC floor-plane detection",
     visual: "hallway",
     wide: true,
-    video: "/media/hallway-real.mp4",
+    // The result leads; the camera feed and depth map it came from follow.
+    video: "/media/hallway-cloud.mp4",
     moreVideos: [
+      {
+        src: "/media/hallway-real.mp4",
+        caption: "The hallway as the camera sees it.",
+        aspect: 450 / 800,
+      },
       {
         src: "/media/hallway-depth.mp4",
         caption: "Colour-mapped depth, with people appearing as near shapes.",
-      },
-      {
-        src: "/media/hallway-cloud.mp4",
-        caption: "The point cloud, with the floor plane found by RANSAC in green.",
+        aspect: 1200 / 800,
       },
     ],
     description:
@@ -171,9 +173,76 @@ export const projects: Project[] = [
       ["Depth", "distance for every pixel"],
     ],
     paragraphs: [
-      "The left clip is the real hallway. The middle is its depth map, and the right is the same depth pushed out into a 3D point cloud.",
+      "Three views of one walk: the real hallway, its depth map, and the same depth pushed out into a 3D point cloud.",
       "RANSAC fits a plane to the floor, and the points that belong to it are coloured green so the obstacles stand out from the ground.",
     ],
+  },
+  {
+    id: "neptune",
+    index: "07",
+    name: "Code that stays alive.",
+    category: "Graphics & systems",
+    tagline: "Neptune · an interactive C++ notebook",
+    visual: "neptune",
+    repo: "Neptune",
+    description: "An interactive notebook for C++ and Objective-C++, powered by a native kernel that remembers what came before.",
+    tags: ["C++", "Objective-C++", "LLVM / Clang"],
+    facts: [["C++", "and Objective-C++"], ["Native", "persistent kernel"], ["Metal", "direct GPU access"]],
+    paragraphs: ["Neptune brings an interactive notebook workflow to C++ and Objective-C++, with a separate kernel that keeps variables and functions alive across cells.", "Each cell is compiled into a dynamic library and loaded into the running process. That makes it possible to experiment incrementally while working with native code and Metal."],
+  },
+  {
+    id: "quantum-stream",
+    index: "08",
+    name: "A world in every frame.",
+    category: "Graphics & systems",
+    tagline: "QuantumStream · live sensor streaming",
+    visual: "quantum",
+    description: "Depth, color, and camera calibration travel together from iPhone to Mac as one synchronized frame.",
+    tags: ["C++", "Networking", "iPhone → Mac"],
+    facts: [["3", "data types in one frame"], ["TCP / UDP", "transport"], ["Live", "sensor data"]],
+    paragraphs: ["QuantumStream sends live sensor data from an iPhone to a Mac, joining depth, color video, and camera calibration into a synchronized frame.", "The streaming module supports TCP and chunked UDP, making camera data available to native applications for real-time experiments."],
+  },
+  {
+    id: "sherlock",
+    index: "09",
+    name: "A pulse in the pixels.",
+    category: "Machine learning",
+    tagline: "Sherlock · detecting a heartbeat from video",
+    visual: "sherlock",
+    description: "A computer vision experiment that finds subtle signs of a heartbeat in face video to help identify deepfakes.",
+    tags: ["Computer vision", "Signal processing", "Deepfake detection"],
+    facts: [["Video", "ordinary face footage"], ["Pulse", "from subtle color changes"], ["Eulerian", "video magnification"]],
+    paragraphs: ["Blood flow causes tiny changes in skin color. Sherlock uses Eulerian video magnification to amplify those changes and recover a pulse signal from ordinary face video.", "The presence and consistency of the recovered signal can provide a clue when distinguishing real footage from deepfakes."],
+  },
+  {
+    id: "throughput",
+    index: "10",
+    name: "Eight million points.",
+    category: "Graphics & systems",
+    tagline: "Throughput: eight million points from one graph",
+    visual: "throughput",
+    video: "/media/particles-orbit.mp4",
+    moreVideos: [
+      {
+        src: "/media/particles-inside.mp4",
+        caption:
+          "The camera inside the cloud, where the point grid lines up into kaleidoscopic starbursts.",
+      },
+    ],
+    repo: "WorldOf3D",
+    description:
+      "A 200 × 200 × 200 grid of coloured points, built as tensors in the matrix graph and drawn straight from GPU buffers.",
+    tags: ["Metal", "GPU buffers", "Real-time rendering"],
+    facts: [
+      ["8 million", "points drawn live"],
+      ["120+ FPS", "on an M4 Max"],
+      ["GPU buffers", "drawn without a copy"],
+    ],
+    paragraphs: [
+      "The particle demo builds a 200 × 200 × 200 grid of randomly coloured points as tensors, so the positions and colours are just nodes in the same matrix graph.",
+      "The renderer draws them straight from the GPU buffers, joining computation and graphics without an extra copy. It is a test of how much throughput the library can sustain.",
+    ],
+    note: "The native particle demo was recorded on an M4 Max. The interactive sculpture on this website is a separate browser visualization, not a benchmark of matrix.",
   },
 ];
 export const moreProjects = [
@@ -182,12 +251,6 @@ export const moreProjects = [
     type: "Graphics engine",
     text: "Scene graphs, ray picking, BVH, gizmos, and particles. Graphics and compute share one tensor graph.",
     repo: "WorldOf3D",
-  },
-  {
-    name: "Neptune",
-    type: "Developer tools",
-    text: "A notebook for C++ and Objective-C++, with persistent variables, a separate kernel, and direct Metal access.",
-    repo: "Neptune",
   },
   {
     name: "ColabFoldMLX",
@@ -206,11 +269,6 @@ export const experiments = [
     name: "Path-planning sandbox",
     type: "Python + pygame",
     text: "Draw barriers and watch an A* search explore the route. An early step toward the driving stack.",
-  },
-  {
-    name: "QuantumStream",
-    type: "iPhone ↔ Mac",
-    text: "Live tensors over TCP or chunked UDP. Depth, RGB, and camera intrinsics travel together in one frame.",
   },
 ];
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import PointCloud from "./PointCloud";
 import ThemeToggle from "./ThemeToggle";
+import MatrixGraphs from "./MatrixGraphs";
 import type { Shape } from "./PointCloud";
 import { archive, experiments, moreProjects, projects } from "./data";
 import type { Category, Project } from "./data";
@@ -12,6 +13,9 @@ const categories: Category[] = [
   "Graphics & systems",
   "Robotics",
 ];
+const matchesCategory = (project: Project, category: Category) =>
+  category === "All work" || project.category === category ||
+  (project.additionalCategories?.includes(category) ?? false);
 // Each project has a shareable URL, /work/<id>, that opens its dialog.
 const projectPath = (p: Project) => `/work/${p.id}`;
 function projectFromLocation() {
@@ -169,6 +173,44 @@ function AutoVideo({
     </video>
   );
 }
+function ProjectIllustration({ visual }: { visual: string }) {
+  if (visual === "neptune") return (
+    <div className="custom-art neptune-art" aria-hidden="true">
+      <div className="notebook-window">
+        <div className="notebook-top"><span>● ● ●</span><span>NEPTUNE / NOTEBOOK</span></div>
+        <div className="notebook-cell"><span>01</span><code><i>auto</i> world = make_scene();</code></div>
+        <div className="notebook-cell"><span>02</span><code>world.<i>render</i>();</code></div>
+        <div className="notebook-result"><span>↳</span> kernel ready <b>●</b></div>
+      </div>
+      <span className="art-caption">NATIVE CODE / LIVE PROCESS</span>
+    </div>
+  );
+  if (visual === "quantum") return (
+    <div className="custom-art quantum-art" aria-hidden="true">
+      <svg viewBox="0 0 560 300" fill="none">
+        <rect x="48" y="74" width="82" height="152" rx="16" stroke="currentColor" strokeWidth="2" />
+        <rect x="57" y="86" width="64" height="128" rx="7" stroke="currentColor" opacity=".35" />
+        <rect x="423" y="84" width="100" height="112" rx="5" stroke="currentColor" strokeWidth="2" />
+        <path d="M408 212h130M473 196v16" stroke="currentColor" strokeWidth="2" />
+        <path d="M140 110h55l25 22h125l25-22h44M140 150h274M140 190h55l25-22h125l25 22h44" stroke="currentColor" opacity=".4" />
+        <circle cx="227" cy="132" r="4" fill="#eb8661"/><circle cx="289" cy="150" r="4" fill="#eb8661"/><circle cx="351" cy="168" r="4" fill="#eb8661"/>
+        <text x="280" y="116" textAnchor="middle">DEPTH</text><text x="280" y="145" textAnchor="middle">COLOR</text><text x="280" y="185" textAnchor="middle">CAMERA</text>
+      </svg>
+      <span className="art-caption">IPHONE → MAC / SYNCHRONIZED FRAMES</span>
+    </div>
+  );
+  return (
+    <div className="custom-art sherlock-art" aria-hidden="true">
+      <svg viewBox="0 0 560 300" fill="none">
+        <path d="M280 40c-58 0-92 46-92 103 0 70 40 119 92 119s92-49 92-119c0-57-34-103-92-103Z" stroke="currentColor" opacity=".45" strokeWidth="2" />
+        <path d="M219 132c14-8 29-8 43 0m36 0c14-8 29-8 43 0M280 140v38m-24 31c16 8 32 8 48 0" stroke="currentColor" opacity=".35" strokeWidth="2" strokeLinecap="round" />
+        <path d="M45 166h114l18-9 15 16 15-25 18 18h30l13-9 12 9 12-27 13 47 14-29 11 9h185" stroke="#ee9879" strokeWidth="2.5" strokeLinejoin="round" />
+        <circle cx="280" cy="166" r="45" stroke="#ee9879" opacity=".3" strokeDasharray="3 7" />
+      </svg>
+      <span className="art-caption">VIDEO → COLOR → PULSE</span>
+    </div>
+  );
+}
 function ProjectCard({
   project,
   onOpen,
@@ -188,11 +230,14 @@ function ProjectCard({
         <div className={`project-visual ${project.visual}`}>
           {project.visual === "matrix" ? (
             <MatrixDrawing />
+          ) : ["neptune", "quantum", "sherlock"].includes(project.visual) ? (
+            <ProjectIllustration visual={project.visual} />
           ) : project.visual === "hallway" ? (
             <>
+              {/* The card reads left to right: camera, depth, point cloud. */}
               {[
-                project.video!,
                 ...(project.moreVideos ?? []).map((v) => v.src),
+                project.video!,
               ].map((src, i) => (
                 <AutoVideo
                   key={src}
@@ -337,8 +382,11 @@ function ProjectDialog({
         </div>
       </div>
       {/* Wide screens put the media beside the text, so the text is never
-          pushed below the fold; narrow screens stack head, media, then text. */}
-      <div className={`dialog-body${project.video ? " has-media" : ""}`}>
+          pushed below the fold; narrow screens and very wide media stack head,
+          media, then text. */}
+      <div
+        className={`dialog-body${project.video && !project.wideMedia ? " has-media" : ""}`}
+      >
         <div className="dialog-head">
           <h2 id="dialog-title">{project.tagline}</h2>
           <p className="dialog-intro">{project.description}</p>
@@ -354,12 +402,20 @@ function ProjectDialog({
               poster={project.image}
               label={`${project.tagline} project recording`}
             />
-            {project.moreVideos?.map((v) => (
-              <figure className="dialog-figure" key={v.src}>
-                <AutoVideo controls src={v.src} label={v.caption} />
-                <figcaption>{v.caption}</figcaption>
-              </figure>
-            ))}
+            {project.moreVideos && (
+              <div className="dialog-more">
+                {project.moreVideos.map((v) => (
+                  <figure
+                    className="dialog-figure"
+                    key={v.src}
+                    style={{ flexGrow: v.aspect ?? 1 }}
+                  >
+                    <AutoVideo controls src={v.src} label={v.caption} />
+                    <figcaption>{v.caption}</figcaption>
+                  </figure>
+                ))}
+              </div>
+            )}
           </div>
         )}
         <div className="dialog-text">
@@ -375,6 +431,7 @@ function ProjectDialog({
           {project.paragraphs.map((p) => (
             <p key={p}>{p}</p>
           ))}
+          {project.id === "matrix" && <MatrixGraphs />}
           {project.note && <p className="technical-note">{project.note}</p>}
           {project.repo ? (
             <ExternalLink
@@ -673,7 +730,7 @@ export default function App() {
             <span className="eyebrow project-count" aria-live="polite">
               {String(
                 projects.filter(
-                  (p) => category === "All work" || p.category === category,
+                  (p) => matchesCategory(p, category),
                 ).length,
               ).padStart(2, "0")}{" "}
               PROJECTS
@@ -681,7 +738,7 @@ export default function App() {
           </div>
           <div className="projects-grid">
             {projects
-              .filter((p) => category === "All work" || p.category === category)
+              .filter((p) => matchesCategory(p, category))
               .map((p) => (
                 <ProjectCard
                   key={p.id}

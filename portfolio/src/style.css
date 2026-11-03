@@ -473,6 +473,30 @@ svg {
   grid-template-columns: 1fr 1fr;
   gap: 50px 30px;
 }
+.custom-art {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #dae0d1;
+  background: #232b26;
+  background-image: radial-gradient(#aab79a20 0.8px, transparent 0.8px);
+  background-size: 17px 17px;
+}
+.custom-art svg { width: 85%; max-height: 80%; }
+.custom-art svg text { fill: currentColor; font: 9px var(--mono); letter-spacing: 2px; }
+.art-caption { position: absolute; bottom: 8%; font: 8px var(--mono); letter-spacing: 1.4px; opacity: .65; }
+.quantum-art { background-color: #253137; }
+.sherlock-art { background-color: #392c2c; color: #dfc7bc; }
+.notebook-window { width: 70%; max-width: 380px; border: 1px solid #a8b39b70; background: #1b221f; box-shadow: 0 18px 40px #0004; font-family: var(--mono); }
+.notebook-top { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid #a8b39b40; color: #9eab96; font-size: 8px; letter-spacing: 1px; }
+.notebook-cell { display: flex; gap: 18px; padding: 13px 15px; border-bottom: 1px solid #a8b39b25; font-size: clamp(9px, 1.1vw, 12px); white-space: nowrap; }
+.notebook-cell > span, .notebook-result > span { color: #87977f; }
+.notebook-cell i { color: #ef9470; font-style: normal; }
+.notebook-result { padding: 12px 15px; color: #b2bdae; font-size: 10px; }
+.notebook-result b { color: #a6ba8b; font-size: 8px; }
 .project {
   min-width: 0;
 }
@@ -1167,6 +1191,19 @@ svg {
   max-height: 50dvh;
   background: #101710;
 }
+.dialog-more {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+/* Grow each clip by its aspect ratio so side-by-side clips share a height. */
+.dialog-more .dialog-figure {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.dialog-more video {
+  max-height: none;
+}
 @media (min-width: 1000px) {
   .dialog-body.has-media {
     display: grid;
@@ -1194,6 +1231,10 @@ svg {
   }
   .has-media video {
     max-height: calc(92dvh - 150px);
+  }
+  /* Leave room for the clips that follow the lead video. */
+  .has-media .dialog-media:not(.dialog-media-single) > video {
+    max-height: 58dvh;
   }
   .has-media h2 {
     font-size: 34px;
@@ -2293,4 +2334,64 @@ svg {
   .project-hallway .project-visual {
     aspect-ratio: 3.08;
   }
+}
+
+/* Matrix's computation and differentiation graphs */
+.matrix-lab {
+  margin: 42px 0 32px;
+  padding-top: 30px;
+  border-top: 1px solid var(--line);
+}
+.matrix-lab-heading h3 { margin: 10px 0 0; }
+.dialog-body .matrix-lab-heading p { margin: 8px 0 24px; }
+.matrix-lab-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.matrix-lab-code, .matrix-graph-box {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+}
+.matrix-lab-code { background: #222a24; color: #e5e9dd; }
+.matrix-lab-code > span, .matrix-graph-box > span {
+  display: block;
+  font: 9px var(--mono);
+  letter-spacing: 1px;
+  line-height: 1.5;
+}
+.matrix-lab-code > span { color: #aab6a6; }
+.matrix-lab-code pre {
+  margin: 20px 0 0;
+  overflow-x: auto;
+  font: 11px/1.8 var(--mono);
+  tab-size: 2;
+}
+.matrix-lab-code .syntax-type { color: #e9a785; }
+.matrix-lab-code .syntax-keyword { color: #d7a5d8; }
+.matrix-lab-code .syntax-function { color: #a9c8df; }
+.matrix-lab-code .syntax-number { color: #e7c785; }
+.matrix-lab-code .syntax-comment { color: #a0ad9d; }
+.matrix-graph-box { display: flex; flex-direction: column; justify-content: center; }
+.matrix-graph-box > span { color: var(--muted); }
+.matrix-graph-scroll { overflow-x: auto; }
+.matrix-graph { display: block; width: 100%; min-width: 390px; height: auto; color: #d46c4b; }
+.matrix-graph.is-gradient { color: #718b70; }
+.matrix-graph .graph-flow { stroke: currentColor; stroke-width: 1.8; stroke-dasharray: 3 6; }
+.matrix-graph .graph-arrow { stroke: transparent; stroke-width: 1.8; }
+.matrix-graph marker path { fill: currentColor; }
+.matrix-graph rect { fill: var(--paper); stroke: currentColor; stroke-width: 1.6; }
+.matrix-graph .is-leaf rect { stroke-dasharray: 4 3; }
+.matrix-graph text { fill: var(--ink); font: 13px var(--mono); text-anchor: middle; }
+.matrix-graph .graph-detail { fill: var(--muted); font-size: 10px; }
+.matrix-graph-box small { color: var(--muted); font: 10px/1.5 var(--mono); }
+.dialog-body .matrix-lab-note { margin: 18px 0 0; font-size: 12px; }
+@media (max-width: 850px) {
+  .matrix-lab-row { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .matrix-graph .graph-flow { animation: matrix-data-flow 1.2s linear infinite; }
+  @keyframes matrix-data-flow { to { stroke-dashoffset: -9; } }
 }
