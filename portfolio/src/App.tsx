@@ -154,19 +154,41 @@ function AutoVideo({
     const el = ref.current;
     if (!el) return;
     el.muted = true;
-    const reduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    if (reduced || !("IntersectionObserver" in window)) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let visible = false;
+    const syncPlayback = () => {
+      // Safari may reject playback just outside the viewport. Request it only
+      // once visible, and let its native autoplay handling resume it if needed.
+      el.autoplay = visible && !reduced.matches;
+      if (visible && !reduced.matches) el.play().catch(() => {});
+      else el.pause();
+    };
+    const onVisibilityChange = () => {
+      if (!document.hidden && visible) syncPlayback();
+    };
+    reduced.addEventListener("change", syncPlayback);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    if (!("IntersectionObserver" in window)) {
+      visible = true;
+      syncPlayback();
+      return () => {
+        reduced.removeEventListener("change", syncPlayback);
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+      };
+    }
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) el.play().catch(() => {});
-        else el.pause();
+        visible = entry.isIntersecting;
+        syncPlayback();
       },
-      { rootMargin: "120px" },
+      { threshold: 0.01 },
     );
     io.observe(el);
-    return () => io.disconnect();
+    return () => {
+      io.disconnect();
+      reduced.removeEventListener("change", syncPlayback);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
   }, [src]);
   return (
     <video
