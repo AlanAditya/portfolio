@@ -125,17 +125,6 @@ function MatrixDrawing() {
     </div>
   );
 }
-const videoPosters: Record<string, string> = {
-  "/media/segmentation-clip.mp4": "/media/posters/segmentation-clip.webp",
-  "/media/gravity-simulation.mp4": "/media/posters/gravity-simulation.webp",
-  "/media/depth-webcam.mp4": "/media/posters/depth-webcam.webp",
-  "/media/handtrack-clip.mp4": "/media/posters/handtrack-clip.webp",
-  "/media/hallway-real.mp4": "/media/posters/hallway-real.webp",
-  "/media/hallway-depth.mp4": "/media/posters/hallway-depth.webp",
-  "/media/hallway-cloud.mp4": "/media/posters/hallway-cloud.webp",
-  "/media/particles-orbit.mp4": "/media/posters/particles-orbit.webp",
-  "/media/particles-inside.mp4": "/media/posters/particles-inside.webp",
-};
 function AutoVideo({
   src,
   poster,
@@ -154,41 +143,19 @@ function AutoVideo({
     const el = ref.current;
     if (!el) return;
     el.muted = true;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let visible = false;
-    const syncPlayback = () => {
-      // Safari may reject playback just outside the viewport. Request it only
-      // once visible, and let its native autoplay handling resume it if needed.
-      el.autoplay = visible && !reduced.matches;
-      if (visible && !reduced.matches) el.play().catch(() => {});
-      else el.pause();
-    };
-    const onVisibilityChange = () => {
-      if (!document.hidden && visible) syncPlayback();
-    };
-    reduced.addEventListener("change", syncPlayback);
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    if (!("IntersectionObserver" in window)) {
-      visible = true;
-      syncPlayback();
-      return () => {
-        reduced.removeEventListener("change", syncPlayback);
-        document.removeEventListener("visibilitychange", onVisibilityChange);
-      };
-    }
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reduced || !("IntersectionObserver" in window)) return;
     const io = new IntersectionObserver(
       ([entry]) => {
-        visible = entry.isIntersecting;
-        syncPlayback();
+        if (entry.isIntersecting) el.play().catch(() => {});
+        else el.pause();
       },
-      { threshold: 0.01 },
+      { rootMargin: "120px" },
     );
     io.observe(el);
-    return () => {
-      io.disconnect();
-      reduced.removeEventListener("change", syncPlayback);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
+    return () => io.disconnect();
   }, [src]);
   return (
     <video
@@ -199,7 +166,7 @@ function AutoVideo({
       loop
       playsInline
       preload="metadata"
-      poster={videoPosters[src] ?? poster}
+      poster={poster}
       aria-label={label}
     >
       <source src={src} type="video/mp4" />
