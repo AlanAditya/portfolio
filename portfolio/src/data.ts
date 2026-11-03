@@ -40,7 +40,7 @@ export const projects: Project[] = [
     image: "/media/segmentation-still.webp",
     video: "/media/segmentation-clip.mp4",
     description:
-      "From a cloud of points to an understanding of the world. A perception pipeline built for autonomous driving.",
+      "From a cloud of points to an understanding of the world. Raw scans from a spinning LiDAR become labelled points, a 2.5D map and tracked 3D boxes around cars and people.",
     tags: ["MLX C++", "Metal", "LiDAR"],
     facts: [
       ["26.4 ms", "end-to-end / scan"],
@@ -49,7 +49,11 @@ export const projects: Project[] = [
     ],
     paragraphs: [
       "For our Smart India Hackathon 2026 entry, I ported SalsaNext to MLX C++, then connected the segmentation output to an adaptive-resolution 2.5D grid and my Metal renderer.",
-      "Four nested rings grow from 5 cm cells near the sensor to 40 cm cells at a distance. That keeps detail where it matters, using 610,000 cells instead of 16 million.",
+      "The pipeline is called drishti (दृष्टि), Sanskrit for sight. Every step is a function with matrices in and out and its settings in the open, so a program can run the steps in its own order, inspect or change what passes between them, or swap one out. The geometry steps only build a graph in matrix, my lazy tensor library. Nothing runs until the scan is evaluated, or until a step needs its result on the CPU.",
+      "First, the scan becomes an image. Each point’s yaw picks a column and its pitch picks a row, giving a 64 × 2048 range image with one row per laser of the Velodyne HDL-64. When several points land on the same pixel, the closest one wins, found with two scatter-min passes on the GPU. Every pixel holds range, x, y, z and remission, in metres.",
+      "SalsaNext then labels every pixel with one of 20 SemanticKITTI classes. The PyTorch weights are converted to MLX only after the MLX network is checked against PyTorch’s output. The labels are carried back to the points, but only points a pixel actually showed count toward objects. Otherwise the points hidden behind them would inherit their class, and the wall behind a car would become “car”.",
+      "Labelled points fill a foveated 2.5D grid: 5 cm cells out to 10 m, then 10 cm to 20 m, 20 cm to 40 m and 40 cm to 100 m. That covers 200 m × 200 m in 610,000 cells (7.3 MB), where a uniform 5 cm grid would need 16 million. Each cell keeps its lowest and highest point, a point count, and its most important class, grouped as terrain, static or dynamic. Two Metal kernels around four atomic scatters build the whole grid.",
+      "Cars and people become objects in bird’s-eye view. Their points are binned into small squares, 30 cm for cars and 20 cm for people, who stand closer together, and touching squares are flood-filled into one object. Each object gets an oriented 3D box from an L-shape fit: the heading whose rectangle the points hug most closely, since a LiDAR only sees the sides facing it. A tracker then matches boxes across scans in the world frame against a constant-velocity prediction, giving every car and person a track id and a speed.",
       "The same grid also accepts iPhone depth. On that data, GPU RANSAC finds the floor using the phone’s gravity vector; plane clustering separates obstacles.",
     ],
     note: "Measured on 500 scans of SemanticKITTI validation sequence 08 (58.9 million labelled points). Mean IoU: 46.3%. This subset skipped SalsaNext’s optional KNN post-processing; these figures are not a full-dataset benchmark.",
