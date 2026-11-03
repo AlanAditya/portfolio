@@ -125,6 +125,17 @@ function MatrixDrawing() {
     </div>
   );
 }
+const videoPosters: Record<string, string> = {
+  "/media/segmentation-clip.mp4": "/media/posters/segmentation-clip.webp",
+  "/media/gravity-simulation.mp4": "/media/posters/gravity-simulation.webp",
+  "/media/depth-webcam.mp4": "/media/posters/depth-webcam.webp",
+  "/media/handtrack-clip.mp4": "/media/posters/handtrack-clip.webp",
+  "/media/hallway-real.mp4": "/media/posters/hallway-real.webp",
+  "/media/hallway-depth.mp4": "/media/posters/hallway-depth.webp",
+  "/media/hallway-cloud.mp4": "/media/posters/hallway-cloud.webp",
+  "/media/particles-orbit.mp4": "/media/posters/particles-orbit.webp",
+  "/media/particles-inside.mp4": "/media/posters/particles-inside.webp",
+};
 function AutoVideo({
   src,
   poster,
@@ -172,7 +183,7 @@ function AutoVideo({
       loop
       playsInline
       preload="metadata"
-      poster={poster}
+      poster={videoPosters[src] ?? poster}
       aria-label={label}
     >
       <source src={src} type="video/mp4" />
